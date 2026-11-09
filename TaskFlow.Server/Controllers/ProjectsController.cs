@@ -81,5 +81,37 @@ namespace TaskFlow.Server.Controllers
             return NoContent();
         }
 
+        
+        [HttpGet("{projectId}/board")]
+        public async Task<ActionResult<List<ColumnDto>>> GetProjectBoard(int projectId)
+        {
+            var columns = await _context.Columns
+                .Where(c => c.ProjectId == projectId)
+                .OrderBy(c => c.Order)
+                .Select(c => new ColumnDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Order = c.Order,
+                    ProjectId = c.ProjectId,
+                    Tasks = _context.Tasks
+                        .Where(t => t.ColumnId == c.Id)
+                        .OrderBy(t => t.Order)
+                        .Select(t => new TaskDto
+                        {
+                            Id = t.Id,
+                            Title = t.Title,
+                            Description = t.Description,
+                            ColumnId = t.ColumnId,
+                            Order = t.Order,
+                            Priority = t.Priority,
+                            CreatedAt = t.CreatedAt
+                        }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(columns);
+        }
+
     }
 }
