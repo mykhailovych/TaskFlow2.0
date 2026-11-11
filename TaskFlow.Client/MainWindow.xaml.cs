@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TaskFlow.Client.ViewModels;
 
 namespace TaskFlow.Client
 {
@@ -19,6 +20,14 @@ namespace TaskFlow.Client
         public MainWindow()
         {
             InitializeComponent();
+        }
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Отримуємо наш ViewModel і викликаємо завантаження даних
+            if (DataContext is MainViewModel vm)
+            {
+                await vm.LoadBoardAsync();
+            }
         }
     }
 }

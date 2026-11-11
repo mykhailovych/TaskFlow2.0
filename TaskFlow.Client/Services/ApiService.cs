@@ -30,6 +30,38 @@ namespace TaskFlow.Client.Services
             return await response.Content.ReadFromJsonAsync<UserDto>();
         }
 
+        public async Task<List<ProjectDto>> GetUserProjectsAsync(int userId)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<ProjectDto>>($"api/projects/user/{userId}");
+            return result ?? new List<ProjectDto>();
+        }
+
+        public async Task<List<ColumnDto>> GetProjectBoardAsync(int projectId)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<ColumnDto>>($"api/projects/{projectId}/board");
+            return result ?? new List<ColumnDto>();
+        }
+
+        public async Task<ProjectDto?> CreateProjectAsync(CreateProjectDto dto)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/projects", dto);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadFromJsonAsync<ProjectDto>();
+        }
+
+        public async Task<TaskDto?> CreateTaskAsync(CreateTaskDto dto)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/tasks", dto);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadFromJsonAsync<TaskDto>();
+        }
+
+        public async Task<bool> DeleteTaskAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"api/tasks/{id}");
+            return response.IsSuccessStatusCode;
+        }
+
 
     }
 }

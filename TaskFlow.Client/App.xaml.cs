@@ -1,14 +1,14 @@
 ﻿using System.Configuration;
 using System.Data;
 using System.Windows;
+using TaskFlow.Shared.DTOs;
 
 namespace TaskFlow.Client
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
+    
     public partial class App : Application
     {
+        public static UserDto? CurrentUser { get; set; }
     }
 
 }
