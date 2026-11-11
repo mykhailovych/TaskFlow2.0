@@ -62,6 +62,11 @@ namespace TaskFlow.Client.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<bool> UpdateTaskAsync(int id, UpdateTaskDto dto)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/tasks/{id}", dto);
+            return response.IsSuccessStatusCode;
+        }
 
     }
 }

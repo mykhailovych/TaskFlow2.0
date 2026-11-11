@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using System.Windows;
+using GongSolutions.Wpf.DragDrop;
 
 namespace TaskFlow.Client.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject, IDropTarget
     {
         private readonly ApiService _apiService;
 
@@ -123,6 +124,51 @@ namespace TaskFlow.Client.ViewModels
                     MessageBox.Show("Помилка при видаленні завдання.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 }
+            }
+        }
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            if(dropInfo.Data is TaskDto && dropInfo.TargetCollection != null)
+            {
+                GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.DragOver(dropInfo);
+            }
+        }
+
+        public async void Drop(IDropInfo dropInfo)
+        {
+            if(dropInfo.Data is TaskDto task)
+            {
+                var sourceColumn = Columns.FirstOrDefault(c => c.Tasks == dropInfo.DragInfo.SourceCollection);
+                var targetColumn = Columns.FirstOrDefault(c => c.Tasks == dropInfo.TargetCollection);
+
+                GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.Drop(dropInfo);
+
+
+                if (sourceColumn != null && targetColumn != null)
+                {
+                    if(sourceColumn.Id != targetColumn.Id)
+                    {
+                        await UpdateTaskColumnAsync(task, targetColumn.Id);
+                    }
+                }
+            }
+        }
+        // Метод для відправки оновлених даних на сервер при переміщенні картки
+        private async Task UpdateTaskColumnAsync(TaskDto task, int newColumnId)
+        {
+            var updateDto = new UpdateTaskDto
+            {
+                Title = task.Title,
+                Description = task.Description,
+                ColumnId = newColumnId,
+                Priority = task.Priority ?? "Medium"
+            };
+
+            var success = await _apiService.UpdateTaskAsync(task.Id, updateDto);
+            if (success)
+            {
+                await LoadBoardAsync(); // Перезавантажуємо дошку, щоб побачити зміни
             }
         }
     }
