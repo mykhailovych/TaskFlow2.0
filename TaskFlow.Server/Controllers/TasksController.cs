@@ -38,6 +38,7 @@ namespace TaskFlow.Server.Controllers
                 ColumnId = dto.ColumnId,
                 Order = currentMaxOrder + 1,
                 Priority = dto.Priority,
+                Deadline = dto.Deadline,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -70,6 +71,7 @@ namespace TaskFlow.Server.Controllers
             taskItem.ColumnId = dto.ColumnId;
             taskItem.Order = dto.Order;
             taskItem.Priority = dto.Priority;
+            taskItem.Deadline = dto.Deadline;
 
             await _context.SaveChangesAsync();
 

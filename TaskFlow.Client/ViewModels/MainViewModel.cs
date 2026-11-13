@@ -92,7 +92,8 @@ namespace TaskFlow.Client.ViewModels
                     Title = taskVm.Title,
                     Description = taskVm.Description,
                     ColumnId = column.Id,
-                    Priority = "Medium"
+                    Priority = taskVm.Priority ?? "Medium",
+                    Deadline = taskVm.Deadline
                 };
 
                 var createdTask = await _apiService.CreateTaskAsync(newTaskDto);
@@ -126,6 +127,45 @@ namespace TaskFlow.Client.ViewModels
                 }
             }
         }
+
+        [RelayCommand]
+        private async Task EditTaskAsync(TaskDto task)
+        {
+            if (task == null) return;
+
+            var taskVm = new TaskViewModel
+            {
+                Title = task.Title,
+                Description = task.Description,
+                Priority = task.Priority ?? "Medium",
+                Deadline = task.Deadline
+            };
+
+            var taskWindow = new Views.TaskWindow
+            {
+                DataContext = taskVm
+            };
+
+            taskWindow.ShowDialog();
+
+            if(taskVm.IsSaved)
+            {
+                var updateDto = new UpdateTaskDto
+                {
+                    Title = taskVm.Title,
+                    Description = taskVm.Description,
+                    ColumnId = task.ColumnId,
+                    Priority = taskVm.Priority,
+                    Deadline = taskVm.Deadline
+                };
+
+                var success = await _apiService.UpdateTaskAsync(task.Id, updateDto);
+
+                if (success) await LoadBoardAsync();
+            }
+        }
+
+
 
         public void DragOver(IDropInfo dropInfo)
         {
@@ -171,5 +211,6 @@ namespace TaskFlow.Client.ViewModels
                 await LoadBoardAsync(); // Перезавантажуємо дошку, щоб побачити зміни
             }
         }
+
     }
 }

@@ -105,6 +105,7 @@ namespace TaskFlow.Server.Controllers
                             ColumnId = t.ColumnId,
                             Order = t.Order,
                             Priority = t.Priority,
+                            Deadline = t.Deadline,
                             CreatedAt = t.CreatedAt
                         }).ToList()
                 })

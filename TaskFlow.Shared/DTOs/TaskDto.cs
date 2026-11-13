@@ -13,5 +13,7 @@ namespace TaskFlow.Shared.DTOs
         public int Order { get; set; }
         public string Priority { get; set; } = "Medium";
         public DateTime CreatedAt { get; set; }
+
+        public DateTime? Deadline { get; set; }
     }
 }

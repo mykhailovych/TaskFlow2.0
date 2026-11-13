@@ -16,6 +16,12 @@ namespace TaskFlow.Client.ViewModels
         private string _description = string.Empty;
 
         [ObservableProperty]
+        private string _priority = "Medium";
+
+        [ObservableProperty]
+        private DateTime? _deadline;
+
+        [ObservableProperty]
         private string _errorMessage = string.Empty;
 
         public bool IsSaved { get; private set; }
