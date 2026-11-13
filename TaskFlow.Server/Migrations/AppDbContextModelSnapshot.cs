@@ -40,6 +40,32 @@ namespace TaskFlow.Server.Migrations
                     b.ToTable("Columns");
                 });
 
+            modelBuilder.Entity("TaskFlow.Server.Models.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TaskItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskItemId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("TaskFlow.Server.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -142,6 +168,13 @@ namespace TaskFlow.Server.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("TaskFlow.Server.Models.Comment", b =>
+                {
+                    b.HasOne("TaskFlow.Server.Models.TaskItem", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("TaskItemId");
+                });
+
             modelBuilder.Entity("TaskFlow.Server.Models.Project", b =>
                 {
                     b.HasOne("TaskFlow.Server.Models.User", "Owner")
@@ -178,6 +211,11 @@ namespace TaskFlow.Server.Migrations
             modelBuilder.Entity("TaskFlow.Server.Models.Project", b =>
                 {
                     b.Navigation("Columns");
+                });
+
+            modelBuilder.Entity("TaskFlow.Server.Models.TaskItem", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("TaskFlow.Server.Models.User", b =>

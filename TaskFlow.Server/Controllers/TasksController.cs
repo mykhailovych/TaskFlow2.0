@@ -60,21 +60,27 @@ namespace TaskFlow.Server.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskDto>> UpdateTask(int id, [FromBody] UpdateTaskDto dto)
         {
-            var taskItem = await _context.Tasks.FindAsync(id);
+            // 1. Знаходимо завдання В РАЗОМ ІЗ ЙОГО КОМЕНТАРЯМИ (Include)
+            var taskItem = await _context.Tasks
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
             if (taskItem == null)
             {
                 return NotFound("Завдання не знайдено.");
             }
 
+            // 2. Оновлюємо основні поля
             taskItem.Title = dto.Title;
             taskItem.Description = dto.Description;
             taskItem.ColumnId = dto.ColumnId;
             taskItem.Order = dto.Order;
-            taskItem.Priority = dto.Priority;
+            taskItem.Priority = dto.Priority ?? "Medium";
             taskItem.Deadline = dto.Deadline;
 
             await _context.SaveChangesAsync();
 
+            // 3. Повертаємо завдання ПОВНІСТЮ, включно з Дедлайном і Коментарями!
             return Ok(new TaskDto
             {
                 Id = taskItem.Id,
@@ -83,7 +89,16 @@ namespace TaskFlow.Server.Controllers
                 ColumnId = taskItem.ColumnId,
                 Order = taskItem.Order,
                 Priority = taskItem.Priority,
-                CreatedAt = taskItem.CreatedAt
+                Deadline = taskItem.Deadline,
+                CreatedAt = taskItem.CreatedAt,
+
+                // Мапимо коментарі, щоб клієнт їх не загубив
+                Comments = taskItem.Comments.Select(c => new CommentDto
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    CreatedAt = c.CreatedAt
+                }).ToList()
             });
         }
         [HttpDelete("{id}")]
@@ -99,6 +114,30 @@ namespace TaskFlow.Server.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPost("{id}/comments")]
+        public async Task<IActionResult> AddComment(int id, [FromBody] CreateCommentDto dto)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null) return NotFound("Завдання не знадено");
+
+            var comment = new Comment
+            {
+                Text = dto.Text,
+                CreatedAt = DateTime.Now,
+                TaskId = id
+            };
+
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new CommentDto
+            {
+                Id = comment.Id,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt
+            });
         }
     }
 }

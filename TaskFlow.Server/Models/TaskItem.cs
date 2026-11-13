@@ -21,5 +21,7 @@
 
         public DateTime? Deadline { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public List<Comment> Comments { get; set; } = new();
     }
 }

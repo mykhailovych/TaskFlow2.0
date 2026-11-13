@@ -2,13 +2,24 @@
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
+using TaskFlow.Client.Services;
+using TaskFlow.Shared.DTOs;
 
 namespace TaskFlow.Client.ViewModels
 {
     public partial class TaskViewModel : ObservableObject
     {
+        public int TaskId { get; set; }
+        public ApiService? ApiService { get; set; }
+
+        [ObservableProperty]
+        ObservableCollection<CommentDto> _comments = new();
+        [ObservableProperty]
+        private string _newCommentText = string.Empty;
+
         [ObservableProperty]
         private string _title = string.Empty;
 
@@ -25,6 +36,8 @@ namespace TaskFlow.Client.ViewModels
         private string _errorMessage = string.Empty;
 
         public bool IsSaved { get; private set; }
+        
+
 
         [RelayCommand]
         private void Save(Window window)
@@ -45,6 +58,21 @@ namespace TaskFlow.Client.ViewModels
         {
             IsSaved = false;
             window.Close();
+        }
+
+        [RelayCommand]
+        private async Task AddCommentAsync()
+        {
+            if (string.IsNullOrWhiteSpace(NewCommentText) || TaskId == 0 || ApiService == null) return;
+
+            var dto = new CreateCommentDto { Text = NewCommentText };
+            var comment = await ApiService.AddCommentAsync(TaskId, dto);
+
+            if(comment != null)
+            {
+                Comments.Add(comment);
+                NewCommentText = string.Empty;
+            }
         }
     }
 }

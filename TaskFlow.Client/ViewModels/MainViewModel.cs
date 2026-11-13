@@ -135,10 +135,13 @@ namespace TaskFlow.Client.ViewModels
 
             var taskVm = new TaskViewModel
             {
+                TaskId = task.Id,
+                ApiService = _apiService,
                 Title = task.Title,
                 Description = task.Description,
                 Priority = task.Priority ?? "Medium",
-                Deadline = task.Deadline
+                Deadline = task.Deadline,
+                Comments = new ObservableCollection<CommentDto>(task.Comments ?? new())
             };
 
             var taskWindow = new Views.TaskWindow
@@ -147,6 +150,7 @@ namespace TaskFlow.Client.ViewModels
             };
 
             taskWindow.ShowDialog();
+            task.Comments = taskVm.Comments.ToList();
 
             if(taskVm.IsSaved)
             {
@@ -155,13 +159,15 @@ namespace TaskFlow.Client.ViewModels
                     Title = taskVm.Title,
                     Description = taskVm.Description,
                     ColumnId = task.ColumnId,
+                    Order = task.Order,
                     Priority = taskVm.Priority,
-                    Deadline = taskVm.Deadline
+                    Deadline = taskVm.Deadline,
+                    
                 };
 
-                var success = await _apiService.UpdateTaskAsync(task.Id, updateDto);
+                await _apiService.UpdateTaskAsync(task.Id, updateDto);
 
-                if (success) await LoadBoardAsync();
+                await LoadBoardAsync();
             }
         }
 

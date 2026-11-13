@@ -15,5 +15,7 @@ namespace TaskFlow.Shared.DTOs
         public DateTime CreatedAt { get; set; }
 
         public DateTime? Deadline { get; set; }
+
+        public List<CommentDto> Comments { get; set; } = new();
     }
 }

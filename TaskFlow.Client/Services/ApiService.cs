@@ -68,5 +68,12 @@ namespace TaskFlow.Client.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<CommentDto?> AddCommentAsync(int taskId, CreateCommentDto dto)
+        {
+            var responce = await _httpClient.PostAsJsonAsync($"api/tasks/{taskId}/comments", dto);
+            if (responce.IsSuccessStatusCode) return await responce.Content.ReadFromJsonAsync<CommentDto>();
+            return null;
+        }
+
     }
 }

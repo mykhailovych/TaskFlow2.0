@@ -81,7 +81,7 @@ namespace TaskFlow.Server.Controllers
             return NoContent();
         }
 
-        
+
         [HttpGet("{projectId}/board")]
         public async Task<ActionResult<List<ColumnDto>>> GetProjectBoard(int projectId)
         {
@@ -94,6 +94,7 @@ namespace TaskFlow.Server.Controllers
                     Name = c.Name,
                     Order = c.Order,
                     ProjectId = c.ProjectId,
+
                     Tasks = _context.Tasks
                         .Where(t => t.ColumnId == c.Id)
                         .OrderBy(t => t.Order)
@@ -106,8 +107,21 @@ namespace TaskFlow.Server.Controllers
                             Order = t.Order,
                             Priority = t.Priority,
                             Deadline = t.Deadline,
-                            CreatedAt = t.CreatedAt
-                        }).ToList()
+                            CreatedAt = t.CreatedAt,
+
+                            // 🛡️ ЗАЛІЗОБЕТОННИЙ СПОСІБ: Прямий вибіг із таблиці Comments за TaskId
+                            Comments = _context.Comments
+                                .Where(cmt => cmt.TaskId == t.Id)
+                                .OrderBy(cmt => cmt.CreatedAt)
+                                .Select(cmt => new CommentDto
+                                {
+                                    Id = cmt.Id,
+                                    Text = cmt.Text,
+                                    CreatedAt = cmt.CreatedAt
+                                })
+                                .ToList()
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
 
