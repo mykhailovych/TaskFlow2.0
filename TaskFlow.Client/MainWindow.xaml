@@ -3,9 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:TaskFlow.Client.ViewModels"
         xmlns:dd="urn:gong-wpf-dragdrop"
+        xmlns:conv="clr-namespace:TaskFlow.Client.Converters"
         Title="TaskFlow - Kanban Дошка" Height="600" Width="1000"
         WindowStartupLocation="CenterScreen" Background="#F3F4F6"
         Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <!-- Реєструємо наш конвертер кольору дедлайну -->
+        <conv:DeadlineColorConverter x:Key="DeadlineColorConverter"/>
+    </Window.Resources>
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -69,7 +75,7 @@
                                                 <!-- Дизайн однієї картки -->
                                                 <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,10">
 
-                                                    <!-- Додаємо прив'язку подвійного кліку до нашої нової команди -->
+                                                    <!-- Прив'язка подвійного кліку для редагування -->
                                                     <Border.InputBindings>
                                                         <MouseBinding MouseAction="LeftDoubleClick" 
                                                                       Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
@@ -77,7 +83,6 @@
                                                     </Border.InputBindings>
 
                                                     <Grid Background="Transparent">
-                                                        <!-- Прозорий фон важливий для подвійного кліку по всьому полю -->
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition Height="Auto"/>
                                                             <!-- Мітки пріоритету та дедлайну -->
@@ -97,14 +102,11 @@
                                                             <Border CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                                                 <Border.Style>
                                                                     <Style TargetType="Border">
-                                                                        <!-- Колір за замовчуванням (Medium - Жовтий) -->
                                                                         <Setter Property="Background" Value="#FEF3C7"/>
                                                                         <Style.Triggers>
-                                                                            <!-- Якщо Low - Зелений -->
                                                                             <DataTrigger Binding="{Binding Priority}" Value="Low">
                                                                                 <Setter Property="Background" Value="#D1FAE5"/>
                                                                             </DataTrigger>
-                                                                            <!-- Якщо High - Червоний -->
                                                                             <DataTrigger Binding="{Binding Priority}" Value="High">
                                                                                 <Setter Property="Background" Value="#FEE2E2"/>
                                                                             </DataTrigger>
@@ -115,14 +117,11 @@
                                                                 <TextBlock Text="{Binding Priority}" FontSize="11" FontWeight="Bold">
                                                                     <TextBlock.Style>
                                                                         <Style TargetType="TextBlock">
-                                                                            <!-- Текст за замовчуванням (Medium - Темно-жовтий) -->
                                                                             <Setter Property="Foreground" Value="#D97706"/>
                                                                             <Style.Triggers>
-                                                                                <!-- Якщо Low - Темно-зелений -->
                                                                                 <DataTrigger Binding="{Binding Priority}" Value="Low">
                                                                                     <Setter Property="Foreground" Value="#065F46"/>
                                                                                 </DataTrigger>
-                                                                                <!-- Якщо High - Темно-червоний -->
                                                                                 <DataTrigger Binding="{Binding Priority}" Value="High">
                                                                                     <Setter Property="Foreground" Value="#991B1B"/>
                                                                                 </DataTrigger>
@@ -138,7 +137,6 @@
                                                                     <Style TargetType="Border">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                         <Style.Triggers>
-                                                                            <!-- Якщо Deadline дорівнює Null - ховаємо цей блок повністю -->
                                                                             <DataTrigger Binding="{Binding Deadline}" Value="{x:Null}">
                                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                             </DataTrigger>
@@ -148,7 +146,11 @@
 
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <TextBlock Text="📅 " FontSize="11" Margin="0,0,2,0"/>
-                                                                    <TextBlock Text="{Binding Deadline, StringFormat='dd.MM.yyyy'}" FontSize="11" FontWeight="Medium" Foreground="#4B5563"/>
+                                                                    <!-- Виводимо час із форматуванням та динамічним кольором -->
+                                                                    <TextBlock Text="{Binding Deadline, StringFormat='HH:mm'}" 
+                                                                               FontSize="11" 
+                                                                               FontWeight="SemiBold" 
+                                                                               Foreground="{Binding Deadline, Converter={StaticResource DeadlineColorConverter}}"/>
                                                                 </StackPanel>
                                                             </Border>
                                                         </StackPanel>

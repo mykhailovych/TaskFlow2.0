@@ -133,6 +133,11 @@ namespace TaskFlow.Client.ViewModels
         {
             if (task == null) return;
 
+            string initialHour = task.Deadline.HasValue ? task.Deadline.Value.ToString("HH") : "00";
+            string initialMinute = task.Deadline.HasValue ? task.Deadline.Value.ToString("mm") : "00";
+            DateTime? initialDate = task.Deadline.HasValue ? task.Deadline.Value.Date : null;
+
+
             var taskVm = new TaskViewModel
             {
                 TaskId = task.Id,
@@ -141,6 +146,9 @@ namespace TaskFlow.Client.ViewModels
                 Description = task.Description,
                 Priority = task.Priority ?? "Medium",
                 Deadline = task.Deadline,
+                SelectedDate = initialDate,
+                SelectedHour = initialHour,
+                SelectedMinute = initialMinute,
                 Comments = new ObservableCollection<CommentDto>(task.Comments ?? new())
             };
 
