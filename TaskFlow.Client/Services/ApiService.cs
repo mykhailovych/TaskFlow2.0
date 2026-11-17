@@ -75,5 +75,23 @@ namespace TaskFlow.Client.Services
             return null;
         }
 
+        public async Task<ColumnDto?> CreateColumnAsync(CreateColumnDto dto)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/columns", dto);
+
+            if(response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ColumnDto>();
+
+            }
+            return null;
+        }
+
+        public async Task<bool> UpdateColumnAsync(int columnId, UpdateColumnDto dto)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/columns/{columnId}", dto);
+            return response.IsSuccessStatusCode;
+        }
+
     }
 }

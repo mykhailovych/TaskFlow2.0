@@ -36,156 +36,181 @@
 
         <!-- Основна робоча область для колонок -->
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding Columns}" Margin="20">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <!-- Колонки будуть розташовані горизонтально -->
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+            <StackPanel Orientation="Horizontal" Margin="20">
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Width="280" Background="#E5E7EB" CornerRadius="8" Margin="0,0,20,0" Padding="10">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <!-- Для заголовка -->
-                                    <RowDefinition Height="*"/>
-                                    <!-- Для списку завдань -->
-                                    <RowDefinition Height="Auto"/>
-                                    <!-- Для кнопки -->
-                                </Grid.RowDefinitions>
+                <!-- Список колонок дошки -->
+                <ItemsControl ItemsSource="{Binding Columns}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
 
-                                <!-- Назва колонки -->
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#374151" Margin="0,0,0,10"/>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="280" Background="#E5E7EB" CornerRadius="8" Margin="0,0,20,0" Padding="10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <!-- Для заголовка -->
+                                        <RowDefinition Height="*"/>
+                                        <!-- Для списку завдань -->
+                                        <RowDefinition Height="Auto"/>
+                                        <!-- Для кнопки -->
+                                    </Grid.RowDefinitions>
 
-                                <!-- Список карток завдань -->
-                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl ItemsSource="{Binding Tasks}"
-                                                  Background="Transparent"
-                                                  MinHeight="300"
-                                                  VerticalAlignment="Stretch"
-                                                  dd:DragDrop.IsDragSource="True"
-                                                  dd:DragDrop.IsDropTarget="True"
-                                                  dd:DragDrop.DropHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
+                                    <!-- Назва колонки та кнопка редагування -->
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                                <!-- Дизайн однієї картки -->
-                                                <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#374151" VerticalAlignment="Center"/>
 
-                                                    <!-- Прив'язка подвійного кліку для редагування -->
-                                                    <Border.InputBindings>
-                                                        <MouseBinding MouseAction="LeftDoubleClick" 
-                                                                      Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                      CommandParameter="{Binding}"/>
-                                                    </Border.InputBindings>
+                                        <!-- Кнопка перейменування колонки -->
+                                        <Button Grid.Column="1" Content="✏️" 
+                                                Command="{Binding DataContext.EditColumnCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Перейменувати колонку"/>
+                                    </Grid>
 
-                                                    <Grid Background="Transparent">
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <!-- Мітки пріоритету та дедлайну -->
-                                                            <RowDefinition Height="*"/>
-                                                            <!-- Текст -->
-                                                        </Grid.RowDefinitions>
+                                    <!-- Список карток завдань -->
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding Tasks}"
+                                                      Background="Transparent"
+                                                      MinHeight="300"
+                                                      VerticalAlignment="Stretch"
+                                                      dd:DragDrop.IsDragSource="True"
+                                                      dd:DragDrop.IsDropTarget="True"
+                                                      dd:DragDrop.DropHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
 
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
+                                                    <!-- Дизайн однієї картки -->
+                                                    <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,10">
 
-                                                        <!-- МІТКИ (Trello Tags) -->
-                                                        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <!-- Прив'язка подвійного кліку для редагування -->
+                                                        <Border.InputBindings>
+                                                            <MouseBinding MouseAction="LeftDoubleClick" 
+                                                                          Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                                          CommandParameter="{Binding}"/>
+                                                        </Border.InputBindings>
 
-                                                            <!-- Мітка пріоритету з динамічними кольорами -->
-                                                            <Border CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                                                <Border.Style>
-                                                                    <Style TargetType="Border">
-                                                                        <Setter Property="Background" Value="#FEF3C7"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Priority}" Value="Low">
-                                                                                <Setter Property="Background" Value="#D1FAE5"/>
-                                                                            </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Priority}" Value="High">
-                                                                                <Setter Property="Background" Value="#FEE2E2"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </Border.Style>
+                                                        <Grid Background="Transparent">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <!-- Мітки пріоритету та дедлайну -->
+                                                                <RowDefinition Height="*"/>
+                                                                <!-- Текст -->
+                                                            </Grid.RowDefinitions>
 
-                                                                <TextBlock Text="{Binding Priority}" FontSize="11" FontWeight="Bold">
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock">
-                                                                            <Setter Property="Foreground" Value="#D97706"/>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- МІТКИ (Trello Tags) -->
+                                                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
+
+                                                                <!-- Мітка пріоритету з динамічними кольорами -->
+                                                                <Border CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                                    <Border.Style>
+                                                                        <Style TargetType="Border">
+                                                                            <Setter Property="Background" Value="#FEF3C7"/>
                                                                             <Style.Triggers>
                                                                                 <DataTrigger Binding="{Binding Priority}" Value="Low">
-                                                                                    <Setter Property="Foreground" Value="#065F46"/>
+                                                                                    <Setter Property="Background" Value="#D1FAE5"/>
                                                                                 </DataTrigger>
                                                                                 <DataTrigger Binding="{Binding Priority}" Value="High">
-                                                                                    <Setter Property="Foreground" Value="#991B1B"/>
+                                                                                    <Setter Property="Background" Value="#FEE2E2"/>
                                                                                 </DataTrigger>
                                                                             </Style.Triggers>
                                                                         </Style>
-                                                                    </TextBlock.Style>
-                                                                </TextBlock>
-                                                            </Border>
+                                                                    </Border.Style>
 
-                                                            <!-- Мітка дедлайну (з іконкою, приховується якщо пусто) -->
-                                                            <Border CornerRadius="4" Padding="6,2" Background="#F3F4F6">
-                                                                <Border.Style>
-                                                                    <Style TargetType="Border">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Deadline}" Value="{x:Null}">
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </Border.Style>
+                                                                    <TextBlock Text="{Binding Priority}" FontSize="11" FontWeight="Bold">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Foreground" Value="#D97706"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Priority}" Value="Low">
+                                                                                        <Setter Property="Foreground" Value="#065F46"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Priority}" Value="High">
+                                                                                        <Setter Property="Foreground" Value="#991B1B"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                </Border>
 
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="📅 " FontSize="11" Margin="0,0,2,0"/>
-                                                                    <!-- Виводимо час із форматуванням та динамічним кольором -->
-                                                                    <TextBlock Text="{Binding Deadline, StringFormat='HH:mm'}" 
-                                                                               FontSize="11" 
-                                                                               FontWeight="SemiBold" 
-                                                                               Foreground="{Binding Deadline, Converter={StaticResource DeadlineColorConverter}}"/>
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </StackPanel>
+                                                                <!-- Мітка дедлайну (з іконкою, приховується якщо пусто) -->
+                                                                <Border CornerRadius="4" Padding="6,2" Background="#F3F4F6">
+                                                                    <Border.Style>
+                                                                        <Style TargetType="Border">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Deadline}" Value="{x:Null}">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Border.Style>
 
-                                                        <!-- Кнопка видалення (Хрестик) -->
-                                                        <Button Grid.Row="0" Grid.Column="1" Content="✕" 
-                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                CommandParameter="{Binding}"
-                                                                Background="Transparent" Foreground="#EF4444" BorderThickness="0" 
-                                                                FontSize="14" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Top" Padding="5,0"/>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="📅 " FontSize="11" Margin="0,0,2,0"/>
+                                                                        <!-- Виводимо час із форматуванням та динамічним кольором -->
+                                                                        <TextBlock Text="{Binding Deadline, StringFormat='HH:mm'}" 
+                                                                                   FontSize="11" 
+                                                                                   FontWeight="SemiBold" 
+                                                                                   Foreground="{Binding Deadline, Converter={StaticResource DeadlineColorConverter}}"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </StackPanel>
 
-                                                        <!-- Текст завдання -->
-                                                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,10,0">
-                                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#111827" TextWrapping="Wrap" FontSize="14"/>
-                                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" Margin="0,5,0,0" MaxHeight="40" TextTrimming="CharacterEllipsis"/>
-                                                        </StackPanel>
-                                                    </Grid>
-                                                </Border>
+                                                            <!-- Кнопка видалення (Хрестик) -->
+                                                            <Button Grid.Row="0" Grid.Column="1" Content="✕" 
+                                                                    Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="Transparent" Foreground="#EF4444" BorderThickness="0" 
+                                                                    FontSize="14" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Top" Padding="5,0"/>
 
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
+                                                            <!-- Текст завдання -->
+                                                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,10,0">
+                                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="#111827" TextWrapping="Wrap" FontSize="14"/>
+                                                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap" Margin="0,5,0,0" MaxHeight="40" TextTrimming="CharacterEllipsis"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
 
-                                <!-- Кнопка додавання нового завдання -->
-                                <Button Grid.Row="2" Content="+ Додати завдання" 
-                                        Command="{Binding DataContext.AddTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Background="Transparent" Foreground="#2563EB" FontWeight="SemiBold" 
-                                        BorderThickness="0" Margin="0,10,0,0" Cursor="Hand" HorizontalAlignment="Left"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <!-- Кнопка додавання нового завдання -->
+                                    <Button Grid.Row="2" Content="+ Додати завдання" 
+                                            Command="{Binding DataContext.AddTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" Foreground="#2563EB" FontWeight="SemiBold" 
+                                            BorderThickness="0" Margin="0,10,0,0" Cursor="Hand" HorizontalAlignment="Left"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Велика кнопка додавання нової колонки в кінці дошки -->
+                <Button Content="+ Додати колонку" 
+                        Command="{Binding AddColumnCommand}"
+                        Width="220" Height="50" VerticalAlignment="Top" 
+                        Background="White" Foreground="#2563EB" FontWeight="Bold" FontSize="14"
+                        BorderBrush="#CBD5E1" BorderThickness="1"
+                        Cursor="Hand" Margin="0,0,20,0"/>
+
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </Window>

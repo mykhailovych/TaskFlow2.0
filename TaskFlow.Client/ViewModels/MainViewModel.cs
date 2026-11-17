@@ -226,5 +226,71 @@ namespace TaskFlow.Client.ViewModels
             }
         }
 
+
+        [RelayCommand]
+        private async Task AddColumnAsync()
+        {
+            if (App.CurrentUser == null) return;
+
+            var projects = await _apiService.GetUserProjectsAsync(App.CurrentUser.Id);
+            var currentProject = projects.FirstOrDefault();
+
+            if(currentProject == null)
+            {
+                MessageBox.Show("Спочатку створіть або виберіть проєкт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int nextOrder = Columns.Count > 0 ? Columns.Max(c => c.Order) + 1 : 0;
+
+            var newColumnDto = new CreateColumnDto
+            {
+                Name = $"Колонка {Columns.Count + 1}",
+                ProjectId = currentProject.Id,
+                Order = nextOrder
+            };
+
+            var createColumn = await _apiService.CreateColumnAsync(newColumnDto);
+            if(createColumn != null)
+            {
+                await LoadBoardAsync();
+            } else
+            {
+                MessageBox.Show("Не вдалося створити колонку.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+
+            }
+        }
+
+        [RelayCommand]
+        private async Task EditColumnAsync(ColumnDto column)
+        {
+            if (column == null) return;
+
+            string newName = Microsoft.VisualBasic.Interaction.InputBox(
+                "Введіть нову назву колонки:",
+                "Редагування колонки",
+                column.Name
+            );
+
+            if(!string.IsNullOrWhiteSpace(newName) && newName != column.Name)
+            {
+                var updateDto = new UpdateColumnDto
+                {
+                    Name = newName,
+                    Order = column.Order
+                };
+
+                var succes = await _apiService.UpdateColumnAsync(column.Id, updateDto);
+                if(succes)
+                {
+                    await LoadBoardAsync();
+                } else
+                {
+                    MessageBox.Show("Не вдалосся оновити назву колонки.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                }
+            }
+        }
+
     }
 }
