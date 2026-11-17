@@ -59,14 +59,19 @@
                                         <!-- Для кнопки -->
                                     </Grid.RowDefinitions>
 
-                                    <!-- Назва колонки та кнопка редагування -->
+                                    <!-- Назва колонки, лічильник та кнопка редагування -->
                                     <Grid Margin="0,0,0,10">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#374151" VerticalAlignment="Center"/>
+                                        <!-- Назва та динамічний лічильник завдань -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#374151"/>
+                                            <TextBlock Text="{Binding Tasks.Count, StringFormat=' ({0})'}" 
+                                                       FontWeight="SemiBold" FontSize="14" Foreground="#6B7280" Margin="5,0,0,0" VerticalAlignment="Bottom"/>
+                                        </StackPanel>
 
                                         <!-- Кнопка перейменування колонки -->
                                         <Button Grid.Column="1" Content="✏️" 
