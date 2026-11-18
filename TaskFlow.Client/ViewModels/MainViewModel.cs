@@ -183,6 +183,11 @@ namespace TaskFlow.Client.ViewModels
 
         public void DragOver(IDropInfo dropInfo)
         {
+            if(dropInfo.Data is ColumnDto || dropInfo.Data is TaskDto)
+            {
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+
             if(dropInfo.Data is TaskDto && dropInfo.TargetCollection != null)
             {
                 GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.DragOver(dropInfo);
@@ -191,6 +196,19 @@ namespace TaskFlow.Client.ViewModels
 
         public async void Drop(IDropInfo dropInfo)
         {
+
+            if(dropInfo.Data is ColumnDto draggedColumn && dropInfo.TargetCollection is ObservableCollection<ColumnDto> targetColumns)
+            {
+                int oldIndex = targetColumns.IndexOf(draggedColumn);
+                int newIndex = dropInfo.InsertIndex;
+                if (newIndex >= targetColumns.Count) newIndex = targetColumns.Count - 1;
+
+                if(oldIndex != newIndex)
+                {
+                    targetColumns.Move(oldIndex, newIndex);
+                    UpdateColumnsOrderAsync(targetColumns);
+                }
+            }
             if(dropInfo.Data is TaskDto task)
             {
                 var sourceColumn = Columns.FirstOrDefault(c => c.Tasks == dropInfo.DragInfo.SourceCollection);
@@ -206,6 +224,20 @@ namespace TaskFlow.Client.ViewModels
                         await UpdateTaskColumnAsync(task, targetColumn.Id);
                     }
                 }
+            }
+        }
+
+        private async void UpdateColumnsOrderAsync(ObservableCollection<ColumnDto> columns)
+        {
+            for(int i = 0; i < columns.Count; i++)
+            {
+                columns[i].Order = i;
+                var updateDto = new UpdateColumnDto
+                {
+                    Name = columns[i].Name,
+                    Order = i
+                };
+                await _apiService.UpdateColumnAsync(columns[i].Id, updateDto);
             }
         }
         // Метод для відправки оновлених даних на сервер при переміщенні картки

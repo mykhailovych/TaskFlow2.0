@@ -38,8 +38,11 @@
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Horizontal" Margin="20">
 
-                <!-- Список колонок дошки -->
-                <ItemsControl ItemsSource="{Binding Columns}">
+                <!-- Список колонок дошки з підтримкою Drag-and-Drop -->
+                <ItemsControl ItemsSource="{Binding Columns}"
+                              dd:DragDrop.IsDragSource="True"
+                              dd:DragDrop.IsDropTarget="True"
+                              dd:DragDrop.DropHandler="{Binding}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
