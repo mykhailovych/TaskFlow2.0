@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using TaskFlow.Client.Services;
 using TaskFlow.Shared.DTOs;
@@ -9,6 +11,7 @@ namespace TaskFlow.Client.ViewModels
     public partial class LoginViewModel : ObservableObject
     {
         private readonly ApiService _apiService;
+        private readonly LoginHistoryService _loginHistoryService;
 
         [ObservableProperty]
         private string _username = string.Empty;
@@ -22,9 +25,46 @@ namespace TaskFlow.Client.ViewModels
         [ObservableProperty]
         private bool _isLoading;
 
+        [ObservableProperty]
+        private ObservableCollection<SavedLoginItem> _savedLogins = new();
+
+        [ObservableProperty]
+        private SavedLoginItem? _selectedSavedLogin;
+
+        [ObservableProperty]
+        private string _loginHint = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasSavedLogins;
+
         public LoginViewModel()
         {
             _apiService = new ApiService();
+            _loginHistoryService = new LoginHistoryService();
+            PropertyChanged += LoginViewModel_PropertyChanged;
+            LoadSavedLogins();
+        }
+
+        private void LoginViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SelectedSavedLogin) && SelectedSavedLogin != null)
+            {
+                Username = SelectedSavedLogin.Username;
+                Password = SelectedSavedLogin.Password;
+                LoginHint = $"Ви вже логінилися як {SelectedSavedLogin.Username} ({SelectedSavedLogin.LastLogin:dd.MM.yyyy HH:mm}). Пароль підставлено.";
+            }
+        }
+
+        private void LoadSavedLogins()
+        {
+            var items = _loginHistoryService.GetSavedLogins();
+            SavedLogins = new ObservableCollection<SavedLoginItem>(items);
+            HasSavedLogins = SavedLogins.Count > 0;
+
+            if (HasSavedLogins)
+            {
+                SelectedSavedLogin = SavedLogins[0];
+            }
         }
 
         [RelayCommand]
@@ -49,6 +89,7 @@ namespace TaskFlow.Client.ViewModels
                 return;
             }
 
+            _loginHistoryService.SaveLogin(Username.Trim(), Password);
             App.CurrentUser = user;
 
             var mainWindow = new MainWindow();
