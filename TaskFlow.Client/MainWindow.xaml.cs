@@ -23,7 +23,6 @@ namespace TaskFlow.Client
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Отримуємо наш ViewModel і викликаємо завантаження даних
             if (DataContext is MainViewModel vm)
             {
                 await vm.LoadBoardAsync();

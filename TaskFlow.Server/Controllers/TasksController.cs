@@ -60,7 +60,6 @@ namespace TaskFlow.Server.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskDto>> UpdateTask(int id, [FromBody] UpdateTaskDto dto)
         {
-            // 1. Знаходимо завдання В РАЗОМ ІЗ ЙОГО КОМЕНТАРЯМИ (Include)
             var taskItem = await _context.Tasks
                 .Include(t => t.Comments)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -80,7 +79,6 @@ namespace TaskFlow.Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            // 3. Повертаємо завдання ПОВНІСТЮ, включно з Дедлайном і Коментарями!
             return Ok(new TaskDto
             {
                 Id = taskItem.Id,
@@ -92,7 +90,7 @@ namespace TaskFlow.Server.Controllers
                 Deadline = taskItem.Deadline,
                 CreatedAt = taskItem.CreatedAt,
 
-                // Мапимо коментарі, щоб клієнт їх не загубив
+
                 Comments = taskItem.Comments.Select(c => new CommentDto
                 {
                     Id = c.Id,

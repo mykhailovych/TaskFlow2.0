@@ -35,12 +35,10 @@ namespace TaskFlow.Client.ViewModels
         {
             if (App.CurrentUser == null) return;
 
-            // 1. Отримуємо проєкти користувача
             var projects = await _apiService.GetUserProjectsAsync(App.CurrentUser.Id);
 
             ProjectDto? currentProject = null;
 
-            // 2. Якщо проєктів немає — створюємо базовий автоматично
             if (!projects.Any())
             {
                 var newProjectDto = new CreateProjectDto
@@ -57,7 +55,6 @@ namespace TaskFlow.Client.ViewModels
                 currentProject = projects.First();
             }
 
-            // 3. Якщо проєкт є (знайшли або щойно створили) — завантажуємо колонки
             if (currentProject != null)
             {
                 var board = await _apiService.GetProjectBoardAsync(currentProject.Id);
@@ -77,7 +74,6 @@ namespace TaskFlow.Client.ViewModels
 
             var taskVm = new TaskViewModel();
 
-            // Створюємо вікно БЕЗ властивості Owner
             var taskWindow = new Views.TaskWindow
             {
                 DataContext = taskVm
@@ -240,7 +236,7 @@ namespace TaskFlow.Client.ViewModels
                 await _apiService.UpdateColumnAsync(columns[i].Id, updateDto);
             }
         }
-        // Метод для відправки оновлених даних на сервер при переміщенні картки
+
         private async Task UpdateTaskColumnAsync(TaskDto task, int newColumnId)
         {
             var updateDto = new UpdateTaskDto
@@ -254,7 +250,7 @@ namespace TaskFlow.Client.ViewModels
             var success = await _apiService.UpdateTaskAsync(task.Id, updateDto);
             if (success)
             {
-                await LoadBoardAsync(); // Перезавантажуємо дошку, щоб побачити зміни
+                await LoadBoardAsync(); 
             }
         }
 

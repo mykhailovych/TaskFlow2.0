@@ -109,7 +109,6 @@ namespace TaskFlow.Server.Controllers
                             Deadline = t.Deadline,
                             CreatedAt = t.CreatedAt,
 
-                            // 🛡️ ЗАЛІЗОБЕТОННИЙ СПОСІБ: Прямий вибіг із таблиці Comments за TaskId
                             Comments = _context.Comments
                                 .Where(cmt => cmt.TaskId == t.Id)
                                 .OrderBy(cmt => cmt.CreatedAt)

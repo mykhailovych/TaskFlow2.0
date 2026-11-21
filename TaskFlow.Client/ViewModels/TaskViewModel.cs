@@ -44,7 +44,7 @@ namespace TaskFlow.Client.ViewModels
             {
                 _selectedDate = value;
                 OnPropertyChanged();
-                UpdateDeadlineDateTime(); // Оновлюємо загальний Deadline при зміні дати
+                UpdateDeadlineDateTime(); 
             }
         }
 
@@ -80,25 +80,21 @@ namespace TaskFlow.Client.ViewModels
                 return;
             }
 
-            // Безпечний парсинг годин (якщо рядок пустий або null, ставимо 0)
             int hour = 0;
             if (!string.IsNullOrWhiteSpace(SelectedHour))
             {
                 int.TryParse(SelectedHour.Trim(), out hour);
             }
 
-            // Безпечний парсинг хвилин
             int minute = 0;
             if (!string.IsNullOrWhiteSpace(SelectedMinute))
             {
                 int.TryParse(SelectedMinute.Trim(), out minute);
             }
 
-            // Жорсткий захист меж
             hour = Math.Clamp(hour, 0, 23);
             minute = Math.Clamp(minute, 0, 59);
 
-            // Формуємо новий дедлайн
             Deadline = new DateTime(
                 SelectedDate.Value.Year,
                 SelectedDate.Value.Month,
