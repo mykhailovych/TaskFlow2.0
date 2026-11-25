@@ -9,26 +9,21 @@ namespace TaskFlow.Client.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateTime deadline)
-            {
-                var timeLeft = deadline - DateTime.Now;
+            if (value is not DateTime deadline)
+                return Brushes.Gray;
 
-                if (timeLeft.TotalHours <= 3 && timeLeft.TotalHours > 0)
-                {
-                    return new SolidColorBrush(Colors.Gold);
-                }
-                else if (timeLeft.TotalHours <= 0)
-                {
-                    return new SolidColorBrush(Colors.Red);
-                }
-            }
+            var timeLeft = deadline - DateTime.Now;
 
-            return new SolidColorBrush(Colors.Gray);
+            if (timeLeft.TotalSeconds <= 0)
+                return Brushes.Red; // Час настав або вийшов
+
+            if (timeLeft.TotalHours <= 3)
+                return Brushes.Gold; // Залишилось до 3 годин
+
+            return Brushes.Gray;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => Binding.DoNothing;
     }
 }

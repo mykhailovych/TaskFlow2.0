@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Windows;
 using TaskFlow.Client.Services;
 using TaskFlow.Shared.DTOs;
+using System.Windows.Media;
+
 
 namespace TaskFlow.Client.ViewModels
 {
@@ -21,6 +23,10 @@ namespace TaskFlow.Client.ViewModels
 
         [ObservableProperty]
         private string _errorMessage = string.Empty;
+
+        [ObservableProperty]
+        
+        private string _statusColor = "#DC2626";
 
         [ObservableProperty]
         private bool _isLoading;
@@ -115,10 +121,11 @@ namespace TaskFlow.Client.ViewModels
 
             if (user == null)
             {
+                StatusColor = "#DC2626";
                 ErrorMessage = "Користувач з таким ім'ям вже існує.";
                 return;
             }
-
+            StatusColor = "#16A34A";
             ErrorMessage = "Успішна реєстрація! Тепер натисніть «Увійти».";
         }
     }

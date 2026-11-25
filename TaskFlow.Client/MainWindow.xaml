@@ -9,7 +9,6 @@
         Loaded="Window_Loaded">
 
     <Window.Resources>
-        <!-- Реєструємо наш конвертер кольору дедлайну -->
         <conv:DeadlineColorConverter x:Key="DeadlineColorConverter"/>
     </Window.Resources>
 
@@ -55,11 +54,8 @@
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
-                                        <!-- Для заголовка -->
                                         <RowDefinition Height="*"/>
-                                        <!-- Для списку завдань -->
                                         <RowDefinition Height="Auto"/>
-                                        <!-- Для кнопки -->
                                     </Grid.RowDefinitions>
 
                                     <!-- Назва колонки, лічильник та кнопка редагування -->
@@ -69,18 +65,12 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Назва та динамічний лічильник завдань -->
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#374151"/>
-                                            <TextBlock Text="{Binding Tasks.Count, StringFormat=' ({0})'}" 
-                                                       FontWeight="SemiBold" FontSize="14" Foreground="#6B7280" Margin="5,0,0,0" VerticalAlignment="Bottom"/>
+                                            <TextBlock Text="{Binding Tasks.Count, StringFormat=' ({0})'}" FontWeight="SemiBold" FontSize="14" Foreground="#6B7280" Margin="5,0,0,0" VerticalAlignment="Bottom"/>
                                         </StackPanel>
 
-                                        <!-- Кнопка перейменування колонки -->
-                                        <Button Grid.Column="1" Content="✏️" 
-                                                Command="{Binding DataContext.EditColumnCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Перейменувати колонку"/>
+                                        <Button Grid.Column="1" Content="✏️" Command="{Binding DataContext.EditColumnCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Перейменувати колонку"/>
                                     </Grid>
 
                                     <!-- Список карток завдань -->
@@ -94,23 +84,16 @@
                                                       dd:DragDrop.DropHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-
                                                     <!-- Дизайн однієї картки -->
                                                     <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,10">
-
-                                                        <!-- Прив'язка подвійного кліку для редагування -->
                                                         <Border.InputBindings>
-                                                            <MouseBinding MouseAction="LeftDoubleClick" 
-                                                                          Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                                          CommandParameter="{Binding}"/>
+                                                            <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
                                                         </Border.InputBindings>
 
                                                         <Grid Background="Transparent">
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="Auto"/>
-                                                                <!-- Мітки пріоритету та дедлайну -->
                                                                 <RowDefinition Height="*"/>
-                                                                <!-- Текст -->
                                                             </Grid.RowDefinitions>
 
                                                             <Grid.ColumnDefinitions>
@@ -118,10 +101,8 @@
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
 
-                                                            <!-- МІТКИ (Trello Tags) -->
+                                                            <!-- Мітки пріоритету та дедлайну -->
                                                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
-
-                                                                <!-- Мітка пріоритету з динамічними кольорами -->
                                                                 <Border CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                                                     <Border.Style>
                                                                         <Style TargetType="Border">
@@ -154,7 +135,7 @@
                                                                     </TextBlock>
                                                                 </Border>
 
-                                                                <!-- Мітка дедлайну (з іконкою, приховується якщо пусто) -->
+                                                                <!-- Мітка дедлайну (не зникає коли вийшов час, червоніє через DeadlineColorConverter) -->
                                                                 <Border CornerRadius="4" Padding="6,2" Background="#F3F4F6">
                                                                     <Border.Style>
                                                                         <Style TargetType="Border">
@@ -169,21 +150,13 @@
 
                                                                     <StackPanel Orientation="Horizontal">
                                                                         <TextBlock Text="📅 " FontSize="11" Margin="0,0,2,0"/>
-                                                                        <!-- Виводимо час із форматуванням та динамічним кольором -->
-                                                                        <TextBlock Text="{Binding Deadline, StringFormat='HH:mm'}" 
-                                                                                   FontSize="11" 
-                                                                                   FontWeight="SemiBold" 
-                                                                                   Foreground="{Binding Deadline, Converter={StaticResource DeadlineColorConverter}}"/>
+                                                                        <TextBlock Text="{Binding Deadline, StringFormat='HH:mm'}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Deadline, Converter={StaticResource DeadlineColorConverter}}"/>
                                                                     </StackPanel>
                                                                 </Border>
                                                             </StackPanel>
 
-                                                            <!-- Кнопка видалення (Хрестик) -->
-                                                            <Button Grid.Row="0" Grid.Column="1" Content="✕" 
-                                                                    Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Background="Transparent" Foreground="#EF4444" BorderThickness="0" 
-                                                                    FontSize="14" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Top" Padding="5,0"/>
+                                                            <!-- Кнопка видалення -->
+                                                            <Button Grid.Row="0" Grid.Column="1" Content="✕" Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" Foreground="#EF4444" BorderThickness="0" FontSize="14" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Top" Padding="5,0"/>
 
                                                             <!-- Текст завдання -->
                                                             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,10,0">
@@ -192,18 +165,13 @@
                                                             </StackPanel>
                                                         </Grid>
                                                     </Border>
-
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </ScrollViewer>
 
                                     <!-- Кнопка додавання нового завдання -->
-                                    <Button Grid.Row="2" Content="+ Додати завдання" 
-                                            Command="{Binding DataContext.AddTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            Background="Transparent" Foreground="#2563EB" FontWeight="SemiBold" 
-                                            BorderThickness="0" Margin="0,10,0,0" Cursor="Hand" HorizontalAlignment="Left"/>
+                                    <Button Grid.Row="2" Content="+ Додати завдання" Command="{Binding DataContext.AddTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" Foreground="#2563EB" FontWeight="SemiBold" BorderThickness="0" Margin="0,10,0,0" Cursor="Hand" HorizontalAlignment="Left"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -211,12 +179,7 @@
                 </ItemsControl>
 
                 <!-- Велика кнопка додавання нової колонки в кінці дошки -->
-                <Button Content="+ Додати колонку" 
-                        Command="{Binding AddColumnCommand}"
-                        Width="220" Height="50" VerticalAlignment="Top" 
-                        Background="White" Foreground="#2563EB" FontWeight="Bold" FontSize="14"
-                        BorderBrush="#CBD5E1" BorderThickness="1"
-                        Cursor="Hand" Margin="0,0,20,0"/>
+                <Button Content="+ Додати колонку" Command="{Binding AddColumnCommand}" Width="220" Height="50" VerticalAlignment="Top" Background="White" Foreground="#2563EB" FontWeight="Bold" FontSize="14" BorderBrush="#CBD5E1" BorderThickness="1" Cursor="Hand" Margin="0,0,20,0"/>
 
             </StackPanel>
         </ScrollViewer>

@@ -1,18 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using GongSolutions.Wpf.DragDrop;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Media;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using TaskFlow.Client.Services;
 using TaskFlow.Shared.DTOs;
-using System.Threading.Tasks;
-using System.Linq;
-using CommunityToolkit.Mvvm.Input;
-using System.Windows;
-using GongSolutions.Wpf.DragDrop;
 
 namespace TaskFlow.Client.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDropTarget
     {
         private readonly ApiService _apiService;
+        private readonly DispatcherTimer _deadlineTimer;
+        private readonly HashSet<int> _notifiedTaskIds = new();
 
         [ObservableProperty]
         private string _userNameDisplay = string.Empty;
@@ -24,10 +30,41 @@ namespace TaskFlow.Client.ViewModels
         {
             _apiService = new ApiService();
 
-            if(App.CurrentUser != null)
+            if (App.CurrentUser != null)
             {
                 UserNameDisplay = $"Користувач: {App.CurrentUser.Username}";
+            }
 
+            _deadlineTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _deadlineTimer.Tick += (_, _) => CheckDeadlines();
+            _deadlineTimer.Start();
+        }
+
+        private void CheckDeadlines()
+        {
+            if (Columns == null || Columns.Count == 0)
+                return;
+
+            var now = DateTime.Now;
+
+            foreach (var col in Columns)
+            {
+                if (col.Tasks == null) continue;
+
+                foreach (var task in col.Tasks)
+                {
+                    if (!task.Deadline.HasValue)
+                        continue;
+
+                    // Дедлайн не чистимо і не ховаємо — він залишається на картці
+                    if (now >= task.Deadline.Value && _notifiedTaskIds.Add(task.Id))
+                    {
+                        SystemSounds.Exclamation.Play();
+                    }
+                }
             }
         }
 
@@ -62,8 +99,19 @@ namespace TaskFlow.Client.ViewModels
                 Columns.Clear();
                 foreach (var col in board)
                 {
+                    foreach (var task in col.Tasks)
+                    {
+                        // Якщо дедлайн перенесли в майбутнє — дозволяємо звуку спрацювати знову при новому настанні
+                        if (task.Deadline.HasValue && DateTime.Now < task.Deadline.Value)
+                        {
+                            _notifiedTaskIds.Remove(task.Id);
+                        }
+                    }
+
                     Columns.Add(col);
                 }
+
+                CheckDeadlines();
             }
         }
 
@@ -106,20 +154,24 @@ namespace TaskFlow.Client.ViewModels
         {
             if (task == null) return;
 
-            var result = MessageBox.Show($"Ви дійсно хочете видалити завдання «{task.Title}»?",
-        "Підтвердження видалення", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = MessageBox.Show(
+                $"Ви дійсно хочете видалити завдання «{task.Title}»?",
+                "Підтвердження видалення",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
 
-            if(result == MessageBoxResult.Yes)
+            if (result == MessageBoxResult.Yes)
             {
                 var success = await _apiService.DeleteTaskAsync(task.Id);
 
-                if(success)
+                if (success)
                 {
+                    _notifiedTaskIds.Remove(task.Id);
                     await LoadBoardAsync();
-                } else
+                }
+                else
                 {
                     MessageBox.Show("Помилка при видаленні завдання.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-
                 }
             }
         }
@@ -132,7 +184,6 @@ namespace TaskFlow.Client.ViewModels
             string initialHour = task.Deadline.HasValue ? task.Deadline.Value.ToString("HH") : "00";
             string initialMinute = task.Deadline.HasValue ? task.Deadline.Value.ToString("mm") : "00";
             DateTime? initialDate = task.Deadline.HasValue ? task.Deadline.Value.Date : null;
-
 
             var taskVm = new TaskViewModel
             {
@@ -156,7 +207,7 @@ namespace TaskFlow.Client.ViewModels
             taskWindow.ShowDialog();
             task.Comments = taskVm.Comments.ToList();
 
-            if(taskVm.IsSaved)
+            if (taskVm.IsSaved)
             {
                 var updateDto = new UpdateTaskDto
                 {
@@ -165,26 +216,23 @@ namespace TaskFlow.Client.ViewModels
                     ColumnId = task.ColumnId,
                     Order = task.Order,
                     Priority = taskVm.Priority,
-                    Deadline = taskVm.Deadline,
-                    
+                    Deadline = task.Deadline
                 };
 
                 await _apiService.UpdateTaskAsync(task.Id, updateDto);
-
+                _notifiedTaskIds.Remove(task.Id);
                 await LoadBoardAsync();
             }
         }
 
-
-
         public void DragOver(IDropInfo dropInfo)
         {
-            if(dropInfo.Data is ColumnDto || dropInfo.Data is TaskDto)
+            if (dropInfo.Data is ColumnDto || dropInfo.Data is TaskDto)
             {
                 dropInfo.Effects = DragDropEffects.Move;
             }
 
-            if(dropInfo.Data is TaskDto && dropInfo.TargetCollection != null)
+            if (dropInfo.Data is TaskDto && dropInfo.TargetCollection != null)
             {
                 GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.DragOver(dropInfo);
             }
@@ -192,30 +240,29 @@ namespace TaskFlow.Client.ViewModels
 
         public async void Drop(IDropInfo dropInfo)
         {
-
-            if(dropInfo.Data is ColumnDto draggedColumn && dropInfo.TargetCollection is ObservableCollection<ColumnDto> targetColumns)
+            if (dropInfo.Data is ColumnDto draggedColumn && dropInfo.TargetCollection is ObservableCollection<ColumnDto> targetColumns)
             {
                 int oldIndex = targetColumns.IndexOf(draggedColumn);
                 int newIndex = dropInfo.InsertIndex;
                 if (newIndex >= targetColumns.Count) newIndex = targetColumns.Count - 1;
 
-                if(oldIndex != newIndex)
+                if (oldIndex != newIndex)
                 {
                     targetColumns.Move(oldIndex, newIndex);
                     UpdateColumnsOrderAsync(targetColumns);
                 }
             }
-            if(dropInfo.Data is TaskDto task)
+
+            if (dropInfo.Data is TaskDto task)
             {
                 var sourceColumn = Columns.FirstOrDefault(c => c.Tasks == dropInfo.DragInfo.SourceCollection);
                 var targetColumn = Columns.FirstOrDefault(c => c.Tasks == dropInfo.TargetCollection);
 
                 GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.Drop(dropInfo);
 
-
                 if (sourceColumn != null && targetColumn != null)
                 {
-                    if(sourceColumn.Id != targetColumn.Id)
+                    if (sourceColumn.Id != targetColumn.Id)
                     {
                         await UpdateTaskColumnAsync(task, targetColumn.Id);
                     }
@@ -225,7 +272,7 @@ namespace TaskFlow.Client.ViewModels
 
         private async void UpdateColumnsOrderAsync(ObservableCollection<ColumnDto> columns)
         {
-            for(int i = 0; i < columns.Count; i++)
+            for (int i = 0; i < columns.Count; i++)
             {
                 columns[i].Order = i;
                 var updateDto = new UpdateColumnDto
@@ -244,16 +291,17 @@ namespace TaskFlow.Client.ViewModels
                 Title = task.Title,
                 Description = task.Description,
                 ColumnId = newColumnId,
-                Priority = task.Priority ?? "Medium"
+                Order = task.Order,
+                Priority = task.Priority ?? "Medium",
+                Deadline = task.Deadline
             };
 
             var success = await _apiService.UpdateTaskAsync(task.Id, updateDto);
             if (success)
             {
-                await LoadBoardAsync(); 
+                await LoadBoardAsync();
             }
         }
-
 
         [RelayCommand]
         private async Task AddColumnAsync()
@@ -263,7 +311,7 @@ namespace TaskFlow.Client.ViewModels
             var projects = await _apiService.GetUserProjectsAsync(App.CurrentUser.Id);
             var currentProject = projects.FirstOrDefault();
 
-            if(currentProject == null)
+            if (currentProject == null)
             {
                 MessageBox.Show("Спочатку створіть або виберіть проєкт!", "Помилка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -279,13 +327,13 @@ namespace TaskFlow.Client.ViewModels
             };
 
             var createColumn = await _apiService.CreateColumnAsync(newColumnDto);
-            if(createColumn != null)
+            if (createColumn != null)
             {
                 await LoadBoardAsync();
-            } else
+            }
+            else
             {
                 MessageBox.Show("Не вдалося створити колонку.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-
             }
         }
 
@@ -300,7 +348,7 @@ namespace TaskFlow.Client.ViewModels
                 column.Name
             );
 
-            if(!string.IsNullOrWhiteSpace(newName) && newName != column.Name)
+            if (!string.IsNullOrWhiteSpace(newName) && newName != column.Name)
             {
                 var updateDto = new UpdateColumnDto
                 {
@@ -309,16 +357,15 @@ namespace TaskFlow.Client.ViewModels
                 };
 
                 var succes = await _apiService.UpdateColumnAsync(column.Id, updateDto);
-                if(succes)
+                if (succes)
                 {
                     await LoadBoardAsync();
-                } else
+                }
+                else
                 {
                     MessageBox.Show("Не вдалосся оновити назву колонки.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-
                 }
             }
         }
-
     }
 }
